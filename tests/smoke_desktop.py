@@ -12,6 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "desktop"))
 
 from PyQt6.QtWidgets import QApplication  # noqa: E402
+from PyQt6.QtCore import Qt  # noqa: E402
 from main import ConversionWorker, Studio, output_path  # noqa: E402
 
 
@@ -47,6 +48,16 @@ def main():
         screenshot.parent.mkdir(exist_ok=True)
         assert studio.grab().save(str(screenshot), "PNG")
         assert screenshot.stat().st_size > 10_000
+        another = folder / "another.wav"
+        another.write_bytes(source.read_bytes())
+        studio.queue_files([str(another)])
+        studio.table.sortItems(0, Qt.SortOrder.DescendingOrder)
+        selected = studio.table.topLevelItem(0)
+        selected_path = selected.data(0, Qt.ItemDataRole.UserRole)
+        selected.setSelected(True)
+        studio.remove_selected()
+        assert selected_path not in studio.paths
+        assert studio.table.topLevelItemCount() == 1
         studio.clear_queue()
         assert studio.table.topLevelItemCount() == 0
         studio.close()

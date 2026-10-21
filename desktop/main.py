@@ -193,6 +193,8 @@ class Studio(QMainWindow):
         default_folder = Path.home() / "Videos"
         self.output = str(self.settings.value("destination", str(default_folder if default_folder.is_dir() else Path.home())))
         self.paths: list[str] = []
+        # Stable mapping allows sorting without mixing up source files.
+        self.queue_rows: dict[str, QTreeWidgetItem] = {}
         self.worker: ConversionWorker | None = None
         self.running = False
         self.setWindowTitle(APP)
@@ -348,7 +350,6 @@ class Studio(QMainWindow):
         buttons = QHBoxLayout()
         self.add_btn = QPushButton("+  Add files")
         self.add_btn.clicked.connect(self.add_files)
-        self.add_btn.setShortcut("Ctrl+O")
         self.add_btn.setToolTip("Add media files (Ctrl+O)")
         self.remove_btn = QPushButton("Remove selected")
         self.remove_btn.setObjectName("Quiet")
@@ -500,6 +501,8 @@ class Studio(QMainWindow):
             row = QTreeWidgetItem([file.name, file.suffix[1:].upper() or "MEDIA",
                                    human_size(file.stat().st_size), "Queued"])
             row.setToolTip(0, path)
+            row.setData(0, Qt.ItemDataRole.UserRole, path)
+            self.queue_rows[path] = row
             self.table.addTopLevelItem(row)
         self._update_queue_count()
 
@@ -517,17 +520,21 @@ class Studio(QMainWindow):
     def remove_selected(self):
         if self.running:
             return
-        indexes = sorted({self.table.indexOfTopLevelItem(item) for item in self.table.selectedItems()}, reverse=True)
-        for index in indexes:
-            if index >= 0:
-                self.table.takeTopLevelItem(index)
-                self.paths.pop(index)
+        for item in list(self.table.selectedItems()):
+            source = item.data(0, Qt.ItemDataRole.UserRole)
+            visual_index = self.table.indexOfTopLevelItem(item)
+            if visual_index >= 0:
+                self.table.takeTopLevelItem(visual_index)
+            if source in self.paths:
+                self.paths.remove(source)
+            self.queue_rows.pop(source, None)
         self._update_queue_count()
 
     def clear_queue(self):
         if self.running:
             return
         self.paths.clear()
+        self.queue_rows.clear()
         self.table.clear()
         self.progress.setRange(0, 1)
         self.progress.setValue(0)
@@ -652,12 +659,16 @@ class Studio(QMainWindow):
         self.worker.start()
 
     def _on_start(self, index: int, name: str):
-        self.table.topLevelItem(index).setText(3, "Converting…")
+        row = self.queue_rows.get(self.paths[index])
+        if row is not None:
+            row.setText(3, "Converting…")
         self.current_file.setText(name)
 
     def _on_item_done(self, index: int, state: str, details: str):
-        self.table.topLevelItem(index).setText(3, state)
-        self.table.topLevelItem(index).setToolTip(3, details)
+        row = self.queue_rows.get(self.paths[index])
+        if row is not None:
+            row.setText(3, state)
+            row.setToolTip(3, details)
 
     def _on_progress(self, completed: int, total: int):
         self.progress.setValue(completed)
