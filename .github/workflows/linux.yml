@@ -1,0 +1,50 @@
+name: Linux installer
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Linux GUI runtime dependencies
+        run: sudo apt-get update && sudo apt-get install -y libgl1 libegl1 libxkbcommon-x11-0 libxcb-cursor0 ffmpeg
+      - run: pip install -r requirements.txt
+      - run: pyinstaller --noconfirm --windowed --name PlaguesMediaStudio desktop/main.py
+      - name: Build Debian installer
+        shell: bash
+        run: |
+          mkdir -p pkg/DEBIAN pkg/usr/bin pkg/usr/share/applications
+          cp -a dist/PlaguesMediaStudio/. pkg/usr/bin/
+          mv pkg/usr/bin/PlaguesMediaStudio pkg/usr/bin/plagues-media-studio
+          cat > pkg/DEBIAN/control <<'EOF'
+          Package: plagues-media-studio
+          Version: 0.1.0
+          Section: video
+          Priority: optional
+          Architecture: amd64
+          Maintainer: Kaotick Jay
+          Depends: ffmpeg, libgl1, libegl1
+          Description: Plague's Media Studio audio/video converter
+          EOF
+          cat > pkg/usr/share/applications/plagues-media-studio.desktop <<'EOF'
+          [Desktop Entry]
+          Type=Application
+          Name=Plague's Media Studio
+          Exec=plagues-media-studio
+          Terminal=false
+          Categories=AudioVideo;
+          EOF
+          dpkg-deb --build pkg dist/PlaguesMediaStudio-Linux-amd64.deb
+          tar -C dist -czf dist/PlaguesMediaStudio-Linux-portable.tar.gz PlaguesMediaStudio
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PlaguesMediaStudio-Linux
+          path: |
+            dist/PlaguesMediaStudio-Linux-amd64.deb
+            dist/PlaguesMediaStudio-Linux-portable.tar.gz
+          if-no-files-found: error

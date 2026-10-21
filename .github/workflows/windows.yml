@@ -1,0 +1,23 @@
+name: Windows installer
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt
+      - run: pyinstaller --noconfirm --windowed --name PlaguesMediaStudio desktop/main.py
+      - uses: Minionguyjpro/Inno-Setup-Action@v1.2.6
+        with:
+          path: packaging/windows.iss
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PlaguesMediaStudio-Windows-Installer
+          path: dist/PlaguesMediaStudio-Windows-Setup.exe
+          if-no-files-found: error
