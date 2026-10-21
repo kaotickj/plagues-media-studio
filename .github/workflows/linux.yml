@@ -15,6 +15,10 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y libgl1 libegl1 libxkbcommon-x11-0 libxcb-cursor0 ffmpeg
       - run: pip install -r requirements.txt
       - run: python -m py_compile desktop/main.py desktop/theme.py
+      - name: GUI smoke test and preview image
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: python tests/smoke_desktop.py
       - run: pyinstaller --noconfirm --windowed --name PlaguesMediaStudio --add-data 'assets:assets' desktop/main.py
       - name: Build Debian installer
         shell: bash
@@ -50,4 +54,5 @@ jobs:
           path: |
             dist/PlaguesMediaStudio-Linux-amd64.deb
             dist/PlaguesMediaStudio-Linux-portable.tar.gz
+            dist/studio-preview.png
           if-no-files-found: error
