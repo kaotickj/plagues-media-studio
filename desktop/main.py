@@ -332,7 +332,8 @@ class Studio(QMainWindow):
         self.table.setHeaderLabels(["MEDIA FILE", "TYPE", "SIZE", "STATUS"])
         self.table.setRootIsDecorated(False)
         self.table.setAlternatingRowColors(True)
-        self.table.setSortingEnabled(True)
+        # Queue order stays fixed while workers report results by row index.
+        self.table.setSortingEnabled(False)
         self.table.setAllColumnsShowFocus(True)
         self.table.setSelectionMode(QTreeWidget.SelectionMode.ExtendedSelection)
         self.table.setUniformRowHeights(True)
