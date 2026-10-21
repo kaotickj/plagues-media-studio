@@ -30,3 +30,6 @@ FFmpeg and its codec dependencies have their own licenses. Review codec and redi
 
 ## Desktop GUI (studio workspace)
 The desktop GUI now includes a high-contrast, two-panel layout with the custom Plague's Media Studio icon in the header, About dialog, application window and confirmation dialogs. Drag-and-drop import, a readable conversion queue, separate output controls, optional activity log, progress status, cancellation, remembered settings and collision-safe output filenames are included. FFmpeg must be installed and on PATH; converted output is never allowed to overwrite an existing file. The embedded icon is also supplied to the Windows PyInstaller executable, Windows installer and Linux desktop launcher.
+
+### Android interface
+The Android application has a touch-friendly branded interface with the same neon P artwork, larger import/convert controls, separate format and activity cards, a launcher icon and a branded About dialog. This is a native Java UI; it does not depend on PyQt6. Android downloads and other legacy desktop features are not yet ported.

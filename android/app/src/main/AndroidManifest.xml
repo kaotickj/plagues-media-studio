@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
- <application android:label="Plague's Media Studio" android:theme="@android:style/Theme.Material.NoActionBar" android:usesCleartextTraffic="false">
+ <application android:label="Plague's Media Studio" android:icon="@drawable/pms_brand" android:roundIcon="@drawable/pms_brand" android:theme="@android:style/Theme.Material.NoActionBar" android:usesCleartextTraffic="false">
   <activity android:name=".MainActivity" android:exported="true">
    <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter>
   </activity>
