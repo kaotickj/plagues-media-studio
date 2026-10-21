@@ -14,6 +14,7 @@ QLabel#CardLabel { color: #A7BDCA; font-size: 12px; font-weight: 650; }
 QLabel#Muted, QLabel#HelpText { color: #A9BDCA; }
 QLabel#StatusText { color: #C9D8E1; font-size: 12px; }
 QLabel#FormatHint { color: #8CA6B7; font-size: 12px; }
+QWidget#SettingsBody { background: #132130; }
 QFrame#Panel { background: #132130; border: 1px solid #314657; border-radius: 16px; }
 QFrame#InnerCard { background: #182B3B; border: 1px solid #355266; border-radius: 12px; }
 QFrame#DropZone { background: #102637; border: 2px dashed #3B7E87; border-radius: 13px; }

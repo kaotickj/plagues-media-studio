@@ -14,8 +14,8 @@ from PyQt6.QtGui import QAction, QCloseEvent, QIcon, QPixmap
 from PyQt6.QtWidgets import (
     QApplication, QComboBox, QDialog, QFileDialog, QFrame, QHBoxLayout,
     QHeaderView, QLabel, QLineEdit, QMainWindow, QMessageBox, QPlainTextEdit,
-    QProgressBar, QPushButton, QSplitter, QTreeWidget, QTreeWidgetItem,
-    QVBoxLayout, QWidget,
+    QProgressBar, QPushButton, QScrollArea, QSplitter, QTreeWidget, QTreeWidgetItem,
+    QVBoxLayout, QWidget, QLayout,
 )
 
 from theme import STYLE
@@ -145,7 +145,7 @@ class DropZone(QFrame):
         area = QVBoxLayout(self)
         area.setContentsMargins(18, 18, 18, 17)
         area.setSpacing(5)
-        title = QLabel("＋   Drop audio or video files here")
+        title = QLabel("Drop audio or video files here")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         title.setStyleSheet("font-size: 15px; font-weight: 700; color: #E8FAF7;")
         subtitle = QLabel("Or use Add files below. Files stay on your computer.")
@@ -340,7 +340,7 @@ class Studio(QMainWindow):
         self.table.setToolTip("Select one or more files and choose Remove selected")
         layout.addWidget(self.table, stretch=1)
         buttons = QHBoxLayout()
-        self.add_btn = QPushButton("＋  Add files")
+        self.add_btn = QPushButton("+  Add files")
         self.add_btn.clicked.connect(self.add_files)
         self.remove_btn = QPushButton("Remove selected")
         self.remove_btn.setObjectName("Quiet")
@@ -358,17 +358,30 @@ class Studio(QMainWindow):
     def _settings_panel(self):
         panel = QFrame()
         panel.setObjectName("Panel")
-        layout = QVBoxLayout(panel)
-        layout.setContentsMargins(20, 19, 20, 19)
-        layout.setSpacing(12)
+        outer = QVBoxLayout(panel)
+        outer.setContentsMargins(20, 17, 20, 17)
+        outer.setSpacing(9)
         heading = QLabel("Conversion settings")
         heading.setObjectName("SectionTitle")
-        layout.addWidget(heading)
+        outer.addWidget(heading)
         helper = QLabel("Choose the output format and where to save it.")
         helper.setObjectName("Muted")
         helper.setWordWrap(True)
-        layout.addWidget(helper)
-        layout.addSpacing(12)
+        outer.addWidget(helper)
+
+        # Keep input settings scrollable at compact window sizes; the important
+        # progress and action controls remain visible at all times.
+        settings_scroll = QScrollArea()
+        settings_scroll.setWidgetResizable(True)
+        settings_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        settings_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        settings_scroll.setStyleSheet("QScrollArea { background: transparent; border: 0; }")
+        settings_body = QWidget()
+        settings_body.setObjectName("SettingsBody")
+        layout = QVBoxLayout(settings_body)
+        layout.setContentsMargins(1, 8, 5, 6)
+        layout.setSpacing(9)
+        layout.setSizeConstraint(QLayout.SizeConstraint.SetMinimumSize)
         format_label = QLabel("OUTPUT FORMAT")
         format_label.setObjectName("CardLabel")
         layout.addWidget(format_label)
@@ -379,8 +392,9 @@ class Studio(QMainWindow):
         layout.addWidget(self.format_combo)
         self.format_hint = QLabel("Audio extraction supported")
         self.format_hint.setObjectName("FormatHint")
+        self.format_hint.setWordWrap(True)
         layout.addWidget(self.format_hint)
-        layout.addSpacing(12)
+        layout.addSpacing(9)
         destination_label = QLabel("SAVE CONVERTED FILES TO")
         destination_label.setObjectName("CardLabel")
         layout.addWidget(destination_label)
@@ -392,36 +406,38 @@ class Studio(QMainWindow):
         browse_btn.setObjectName("Quiet")
         browse_btn.clicked.connect(self.choose_folder)
         layout.addWidget(browse_btn)
-        layout.addSpacing(16)
-        layout.addWidget(line())
-        layout.addSpacing(8)
+        layout.addStretch(1)
+        settings_scroll.setWidget(settings_body)
+        outer.addWidget(settings_scroll, stretch=1)
+
+        outer.addWidget(line())
         progress_title = QLabel("CONVERSION PROGRESS")
         progress_title.setObjectName("CardLabel")
-        layout.addWidget(progress_title)
+        outer.addWidget(progress_title)
         self.progress = QProgressBar()
         self.progress.setRange(0, 1)
         self.progress.setValue(0)
         self.progress.setFormat("0 / 0 processed")
-        layout.addWidget(self.progress)
+        outer.addWidget(self.progress)
         self.current_file = QLabel("Nothing processing")
         self.current_file.setWordWrap(True)
         self.current_file.setObjectName("Muted")
-        layout.addWidget(self.current_file)
-        layout.addStretch()
+        outer.addWidget(self.current_file)
         self.convert_btn = QPushButton("▶  Start conversion")
         self.convert_btn.setObjectName("Primary")
         self.convert_btn.clicked.connect(self.convert)
-        layout.addWidget(self.convert_btn)
+        outer.addWidget(self.convert_btn)
         self.cancel_btn = QPushButton("Cancel current job")
         self.cancel_btn.setObjectName("Danger")
         self.cancel_btn.setEnabled(False)
+        self.cancel_btn.setVisible(False)
         self.cancel_btn.clicked.connect(self.cancel_conversion)
-        layout.addWidget(self.cancel_btn)
+        outer.addWidget(self.cancel_btn)
         notice = QLabel("Original files are kept. Existing outputs are never overwritten.")
         notice.setWordWrap(True)
         notice.setObjectName("HelpText")
         notice.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(notice)
+        outer.addWidget(notice)
         return panel
 
     def _update_format_hint(self, *_):
@@ -578,6 +594,7 @@ class Studio(QMainWindow):
             widget.setEnabled(not running)
         self.drop.setAcceptDrops(not running)
         self.cancel_btn.setEnabled(running)
+        self.cancel_btn.setVisible(running)
         self._update_queue_count()
 
     def convert(self):
