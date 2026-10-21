@@ -6,14 +6,14 @@ AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 DefaultDirName={autopf}\PlaguesMediaStudio
 DefaultGroupName={#MyAppName}
-OutputDir=dist
+OutputDir=..\dist
 OutputBaseFilename=PlaguesMediaStudio-Windows-Setup
 Compression=lzma
 SolidCompression=yes
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 [Files]
-Source: "dist\PlaguesMediaStudio\*"; DestDir: "{app}"; Flags: recursesubdirs
+Source: "..\dist\PlaguesMediaStudio\*"; DestDir: "{app}"; Flags: recursesubdirs
 [Icons]
 Name: "{group}\Plague's Media Studio"; Filename: "{app}\PlaguesMediaStudio.exe"
 Name: "{autodesktop}\Plague's Media Studio"; Filename: "{app}\PlaguesMediaStudio.exe"; Tasks: desktopicon

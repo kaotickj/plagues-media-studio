@@ -27,3 +27,6 @@ The legacy desktop application was Media Conversion Suite v1.7.1. This repositor
 
 ## Third-party notice
 FFmpeg and its codec dependencies have their own licenses. Review codec and redistribution obligations before shipping an installer commercially.
+
+## Desktop GUI (studio workspace)
+The desktop GUI now includes a high-contrast, two-panel layout with the custom Plague's Media Studio icon in the header, About dialog, application window and confirmation dialogs. Drag-and-drop import, a readable conversion queue, separate output controls, optional activity log, progress status, cancellation, remembered settings and collision-safe output filenames are included. FFmpeg must be installed and on PATH; converted output is never allowed to overwrite an existing file. The embedded icon is also supplied to the Windows PyInstaller executable, Windows installer and Linux desktop launcher.

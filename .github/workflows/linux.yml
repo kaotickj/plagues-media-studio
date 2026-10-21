@@ -14,11 +14,13 @@ jobs:
       - name: Linux GUI runtime dependencies
         run: sudo apt-get update && sudo apt-get install -y libgl1 libegl1 libxkbcommon-x11-0 libxcb-cursor0 ffmpeg
       - run: pip install -r requirements.txt
-      - run: pyinstaller --noconfirm --windowed --name PlaguesMediaStudio desktop/main.py
+      - run: python -m py_compile desktop/main.py desktop/theme.py
+      - run: pyinstaller --noconfirm --windowed --name PlaguesMediaStudio --add-data 'assets:assets' desktop/main.py
       - name: Build Debian installer
         shell: bash
         run: |
-          mkdir -p pkg/DEBIAN pkg/usr/bin pkg/usr/share/applications
+          mkdir -p pkg/DEBIAN pkg/usr/bin pkg/usr/share/applications pkg/usr/share/icons/hicolor/192x192/apps
+          cp assets/plagues-media-studio.png pkg/usr/share/icons/hicolor/192x192/apps/plagues-media-studio.png
           cp -a dist/PlaguesMediaStudio/. pkg/usr/bin/
           mv pkg/usr/bin/PlaguesMediaStudio pkg/usr/bin/plagues-media-studio
           cat > pkg/DEBIAN/control <<'EOF'
@@ -36,6 +38,7 @@ jobs:
           Type=Application
           Name=Plague's Media Studio
           Exec=plagues-media-studio
+          Icon=plagues-media-studio
           Terminal=false
           Categories=AudioVideo;
           EOF
